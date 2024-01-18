@@ -2,6 +2,7 @@ package container
 
 import (
 	"localauth/database/grouprepository"
+	"localauth/database/user/userrepository"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -36,4 +37,8 @@ func (c *Container) GetDB() *pgx.Conn {
 
 func (c *Container) GetGroupRepository() *grouprepository.RepositoryImpl {
 	return c.Elements["grouprepository"].Element.(*grouprepository.RepositoryImpl)
+}
+
+func (c *Container) GetUserRepository() *userrepository.RepositoryImpl {
+	return c.Elements["userrepository"].Element.(*userrepository.RepositoryImpl)
 }

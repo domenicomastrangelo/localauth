@@ -26,6 +26,8 @@ func CreateGroupsTable() string {
 		id SERIAL PRIMARY KEY,
 		name TEXT NOT NULL UNIQUE
 	);
+
+	INSERT INTO groups  (id, name) VALUES (0, 'nogroup') ON CONFLICT DO NOTHING;
 	`
 }
 

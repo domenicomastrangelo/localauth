@@ -9,18 +9,6 @@ type User struct {
 	GroupID  int    `json:"group_id"`
 }
 
-func New(
-	name string,
-	surname string,
-	email string,
-	password string,
-	groupID int,
-) *User {
-	return &User{
-		Name:     name,
-		Surname:  surname,
-		Email:    email,
-		Password: password,
-		GroupID:  groupID,
-	}
+func New() *User {
+	return &User{}
 }

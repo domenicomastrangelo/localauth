@@ -7,6 +7,7 @@ import (
 	"localauth/database"
 	"localauth/database/grouprepository"
 	"localauth/database/migrations"
+	"localauth/database/user/userrepository"
 	"localauth/handlers"
 	"localauth/middlewares"
 	"log/slog"
@@ -27,6 +28,9 @@ func main() {
 	})
 	cont.AddElement("grouprepository", container.Element{
 		Element: grouprepository.New(database.New(conf)),
+	})
+	cont.AddElement("userrepository", container.Element{
+		Element: userrepository.New(database.New(conf)),
 	})
 	cont.AddElement("conf", container.Element{
 		Element: conf,
