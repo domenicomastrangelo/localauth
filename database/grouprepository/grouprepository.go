@@ -16,7 +16,7 @@ var ErrGroupAlreadyExists = errors.New("Group already exists")
 type Repository interface {
 	GetGroups(ctx context.Context) (*[]group.Group, error)
 	GetGroup(ctx context.Context, id int) (*group.Group, error)
-	AddGroup(group *group.Group, ctx context.Context, id int) error
+	AddGroup(group *group.Group, ctx context.Context) error
 	EditGroup(group *group.Group) error
 }
 
@@ -30,8 +30,8 @@ func New(db *pgx.Conn) Repository {
 	}
 }
 
-func (g *RepositoryImpl) GetGroups(ctx context.Context) (*[]group.Group, error) {
-	rows, err := g.DB.Query(ctx, "SELECT id, name FROM groups")
+func (r *RepositoryImpl) GetGroups(ctx context.Context) (*[]group.Group, error) {
+	rows, err := r.DB.Query(ctx, "SELECT id, name FROM groups")
 	if err != nil && err != pgx.ErrNoRows {
 		return nil, err
 	} else if err == pgx.ErrNoRows {
@@ -53,8 +53,8 @@ func (g *RepositoryImpl) GetGroups(ctx context.Context) (*[]group.Group, error) 
 	return &groups, nil
 }
 
-func (g *RepositoryImpl) GetGroup(ctx context.Context, id int) (*group.Group, error) {
-	row := g.DB.QueryRow(ctx, "SELECT id, name FROM groups WHERE id = $1", id)
+func (r *RepositoryImpl) GetGroup(ctx context.Context, id int) (*group.Group, error) {
+	row := r.DB.QueryRow(ctx, "SELECT id, name FROM groups WHERE id = $1", id)
 
 	var gg = group.New()
 	err := row.Scan(&gg.ID, &gg.Name)
@@ -67,8 +67,8 @@ func (g *RepositoryImpl) GetGroup(ctx context.Context, id int) (*group.Group, er
 	return gg, nil
 }
 
-func (g *RepositoryImpl) AddGroup(group *group.Group, ctx context.Context, id int) error {
-	_, err := g.DB.Exec(ctx, "INSERT INTO groups (name) VALUES ($1)", group.Name)
+func (r *RepositoryImpl) AddGroup(group *group.Group, ctx context.Context) error {
+	_, err := r.DB.Exec(ctx, "INSERT INTO groups (name) VALUES ($1)", group.Name)
 	if err != nil && strings.Contains(err.Error(), "SQLSTATE 23505") {
 		return ErrGroupAlreadyExists
 	}
@@ -76,6 +76,6 @@ func (g *RepositoryImpl) AddGroup(group *group.Group, ctx context.Context, id in
 	return err
 }
 
-func (g *RepositoryImpl) EditGroup(group *group.Group) error {
+func (r *RepositoryImpl) EditGroup(group *group.Group) error {
 	return nil
 }

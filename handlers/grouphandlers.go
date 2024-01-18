@@ -19,7 +19,7 @@ func GetGroupsHandler(c *fiber.Ctx, cont *container.Container) error {
 	groups, err := groupsvc.GetGroups(context.Background())
 	if err != nil {
 		slog.Error(err.Error())
-		c.Status(fiber.ErrInternalServerError.Code)
+		c.Status(fiber.StatusInternalServerError)
 
 		return err
 	}
@@ -33,7 +33,7 @@ func GetGroupHandler(c *fiber.Ctx, cont *container.Container) error {
 	id, err := strconv.Atoi(c.Params("id", "0"))
 	if err != nil {
 		slog.Error(err.Error())
-		c.Status(fiber.ErrBadRequest.Code)
+		c.Status(fiber.StatusBadRequest)
 
 		return err
 	}
@@ -44,7 +44,7 @@ func GetGroupHandler(c *fiber.Ctx, cont *container.Container) error {
 	group, err := groupsvc.GetGroup(context.Background(), id)
 	if err != nil {
 		slog.Error(err.Error())
-		c.Status(fiber.ErrInternalServerError.Code)
+		c.Status(fiber.StatusInternalServerError)
 
 		return err
 	}
@@ -59,7 +59,7 @@ func AddGroupHandler(c *fiber.Ctx, cont *container.Container) error {
 	err := c.BodyParser(g)
 	if err != nil {
 		slog.Error(err.Error())
-		c.Status(fiber.ErrBadRequest.Code)
+		c.Status(fiber.StatusBadRequest)
 
 		return err
 	}
@@ -71,11 +71,11 @@ func AddGroupHandler(c *fiber.Ctx, cont *container.Container) error {
 
 	if err != nil && err != grouprepository.ErrGroupAlreadyExists {
 		slog.Error(err.Error())
-		c.Status(fiber.ErrInternalServerError.Code)
+		c.Status(fiber.StatusInternalServerError)
 
 		return err
 	} else if err == grouprepository.ErrGroupAlreadyExists {
-		c.Status(fiber.ErrConflict.Code)
+		c.Status(fiber.StatusConflict)
 
 		return err
 	}

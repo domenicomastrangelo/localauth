@@ -33,7 +33,7 @@ func (g *ServiceImpl) AddGroup(ctx context.Context, group *group.Group) error {
 	if err := g.ValidateGroup(group); err != nil {
 		return err
 	}
-	return g.GroupRepository.AddGroup(group, ctx, group.ID)
+	return g.GroupRepository.AddGroup(group, ctx)
 }
 
 func (g *ServiceImpl) ValidateGroup(group *group.Group) error {
