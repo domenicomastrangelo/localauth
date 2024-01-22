@@ -41,7 +41,7 @@ func GetUserHandler(c *fiber.Ctx, cont *container.Container) error {
 	userRepository := cont.GetUserRepository()
 
 	usersvc := userservice.New(userRepository)
-	user, err := usersvc.GetUser(context.Background(), id)
+	user, err := usersvc.GetUser(context.Background(), int64(id))
 	if err != nil {
 		slog.Error(err.Error())
 		c.Status(fiber.StatusInternalServerError)

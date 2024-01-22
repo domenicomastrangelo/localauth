@@ -1,6 +1,7 @@
 package container
 
 import (
+	"localauth/config"
 	"localauth/database/grouprepository"
 	"localauth/database/user/userrepository"
 
@@ -41,4 +42,8 @@ func (c *Container) GetGroupRepository() *grouprepository.RepositoryImpl {
 
 func (c *Container) GetUserRepository() *userrepository.RepositoryImpl {
 	return c.Elements["userrepository"].Element.(*userrepository.RepositoryImpl)
+}
+
+func (c *Container) GetConfigData() *config.ConfigData {
+	return c.Elements["conf"].Element.(*config.ConfigData)
 }

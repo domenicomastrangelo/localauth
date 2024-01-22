@@ -7,7 +7,18 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var (
+	ENV      = "env"
+	ENV_TEST = "test"
+)
+
 type Config struct {
+	CurrentEnv string     `yaml:"current_env"`
+	Env        ConfigData `yaml:"env"`
+	EnvTest    ConfigData `yaml:"env_test"`
+}
+
+type ConfigData struct {
 	DbHost     string `yaml:"db_host"`
 	DbPort     string `yaml:"db_port"`
 	DbUser     string `yaml:"db_user"`
@@ -17,16 +28,30 @@ type Config struct {
 	CookieKey  string `yaml:"cookie_key"`
 }
 
-func New() *Config {
+// New returns a new Config struct
+// with the values from the configuration file.
+// Possible values for env are config.ENV and config.ENV_TEST.
+func New(env string) *ConfigData {
 	c := &Config{}
 	c.ReadConfig()
 
-	c.SetRandomCookieKey()
+	switch env {
+	case ENV:
+		c.CurrentEnv = ENV
+		c.Env.SetRandomCookieKey()
 
-	return c
+		return &c.Env
+	case ENV_TEST:
+		c.CurrentEnv = ENV_TEST
+		c.EnvTest.SetRandomCookieKey()
+
+		return &c.EnvTest
+	}
+
+	return nil
 }
 
-func (c *Config) SetRandomCookieKey() {
+func (c *ConfigData) SetRandomCookieKey() {
 	if c.CookieKey == "" {
 		c.CookieKey = encryptcookie.GenerateKey()
 	}

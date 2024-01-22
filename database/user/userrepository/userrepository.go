@@ -12,7 +12,7 @@ import (
 
 type Repository interface {
 	GetUsers() (*[]user.User, error)
-	GetUser(id int) (*user.User, error)
+	GetUser(id int64) (*user.User, error)
 	AddUser(group *user.User, ctx context.Context) error
 	EditUser(group *user.User) error
 }
@@ -59,7 +59,7 @@ func (r *RepositoryImpl) GetUsers() (*[]user.User, error) {
 	return &users, nil
 }
 
-func (r *RepositoryImpl) GetUser(id int) (*user.User, error) {
+func (r *RepositoryImpl) GetUser(id int64) (*user.User, error) {
 	row := r.DB.QueryRow(context.Background(), "SELECT id, name, surname, email, group_id FROM users WHERE id = $1", id)
 
 	var u = user.New()
@@ -73,9 +73,14 @@ func (r *RepositoryImpl) GetUser(id int) (*user.User, error) {
 	return u, nil
 }
 
+// AddUser adds a new user to the database
+// Returns the number of rows affected and an error
 func (r *RepositoryImpl) AddUser(user *user.User, ctx context.Context) error {
-	_, err := r.DB.Exec(context.Background(), "INSERT INTO users (name, surname, password, email, group_id) VALUES ($1, $2, $3, $4, $5)", user.Name, user.Surname, user.Password, user.Email, user.GroupID)
+	row := r.DB.QueryRow(context.Background(), "INSERT INTO users (name, surname, password, email, group_id) VALUES ($1, $2, $3, $4, $5) RETURNING id", user.Name, user.Surname, user.Password, user.Email, user.GroupID)
+
+	err := row.Scan(&user.ID)
 	if err != nil && strings.Contains(err.Error(), "SQLSTATE 23505") {
+		slog.Error(err.Error())
 		return ErrUserAlreadyExists
 	} else if err != nil {
 		return err

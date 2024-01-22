@@ -1,16 +1,15 @@
 package main
 
 import (
-	"context"
 	"localauth/config"
 	"localauth/container"
 	"localauth/database"
 	"localauth/database/grouprepository"
-	"localauth/database/migrations"
 	"localauth/database/user/userrepository"
 	"localauth/handlers"
 	"localauth/middlewares"
-	"log/slog"
+	"os"
+	"strings"
 
 	"log"
 
@@ -19,31 +18,46 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/encryptcookie"
 )
 
-func main() {
-	conf := config.New()
+var (
+	cont *container.Container
+	conf *config.ConfigData
+)
 
-	cont := container.New()
+func init() {
+	env := os.Getenv("LOCALAUTH_ENV")
+	if strings.TrimSpace(env) == "" {
+		env = config.ENV_TEST
+	}
+
+	conf = config.New(env)
+
+	cont = container.New()
+	db := database.New(cont)
+
 	cont.AddElement("db", container.Element{
-		Element: database.New(conf),
+		Element: db,
 	})
 	cont.AddElement("grouprepository", container.Element{
-		Element: grouprepository.New(database.New(conf)),
+		Element: grouprepository.New(db),
 	})
 	cont.AddElement("userrepository", container.Element{
-		Element: userrepository.New(database.New(conf)),
+		Element: userrepository.New(db),
 	})
 	cont.AddElement("conf", container.Element{
 		Element: conf,
 	})
+}
 
-	err := migrations.Run(cont, context.Background())
-	if err != nil {
-		slog.Error(err.Error())
-		panic(err)
-	}
-
+func main() {
 	app := fiber.New()
 
+	setMiddlewares(app)
+	setRoutes(app)
+
+	log.Fatal(app.Listen(":3000").Error())
+}
+
+func setMiddlewares(app *fiber.App) {
 	app.Use(cors.New(cors.Config{
 		AllowOrigins: "*",
 		AllowHeaders: "Origin, Content-Type, Accept",
@@ -58,7 +72,14 @@ func main() {
 	// 	Expiration:     1 * time.Hour,
 	// 	KeyGenerator:   utils.UUIDv4,
 	// }))
+}
 
+func setRoutes(app *fiber.App) {
+	setAuthorizedRoutes(app)
+	setUnauthorizedRoutes(app)
+}
+
+func setAuthorizedRoutes(app *fiber.App) {
 	authorizedRoutes := app.Group("/api").Use(middlewares.CheckAuth)
 
 	authorizedRoutes.Get("/groups", func(c *fiber.Ctx) error {
@@ -96,6 +117,7 @@ func main() {
 	authorizedRoutes.Use(func(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusNotFound)
 	})
+}
 
-	log.Fatal(app.Listen(":3000").Error())
+func setUnauthorizedRoutes(app *fiber.App) {
 }

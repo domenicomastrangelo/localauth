@@ -1,3 +1,4 @@
 config.yaml
 bin
 tmp
+.vscode/settings.json

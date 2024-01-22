@@ -2,12 +2,11 @@ package migrations
 
 import (
 	"context"
-	"localauth/container"
+
+	"github.com/jackc/pgx/v5"
 )
 
-func Run(cont *container.Container, ctx context.Context) error {
-	db := cont.GetDB()
-
+func Run(db *pgx.Conn, ctx context.Context) error {
 	_, err := db.Exec(ctx, CreateGroupsTable())
 	if err != nil {
 		return err

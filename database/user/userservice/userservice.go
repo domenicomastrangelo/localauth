@@ -2,8 +2,11 @@ package userservice
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"localauth/database/user"
 	"localauth/database/user/userrepository"
+	"log/slog"
 	"regexp"
 	"strings"
 
@@ -15,7 +18,7 @@ type Service interface {
 	ValidateUser(user *user.User) error
 	AddUser(ctx context.Context, user *user.User) error
 	GetUsers(ctx context.Context) (*[]user.User, error)
-	GetUser(ctx context.Context, id int) (*user.User, error)
+	GetUser(ctx context.Context, id int64) (*user.User, error)
 }
 
 type ServiceImpl struct {
@@ -78,13 +81,22 @@ func (s *ServiceImpl) AddUser(ctx context.Context, user *user.User) error {
 		return err
 	}
 
-	return s.UserRepository.AddUser(user, ctx)
+	err := s.UserRepository.AddUser(user, ctx)
+	if err != nil {
+		return err
+	} else if user.ID == 0 {
+		slog.Error("Could not add user")
+		slog.Error(fmt.Sprintf("%v", user))
+		return errors.New("Could not add user")
+	}
+
+	return nil
 }
 
 func (s *ServiceImpl) GetUsers(ctx context.Context) (*[]user.User, error) {
 	return s.UserRepository.GetUsers()
 }
 
-func (s *ServiceImpl) GetUser(ctx context.Context, id int) (*user.User, error) {
+func (s *ServiceImpl) GetUser(ctx context.Context, id int64) (*user.User, error) {
 	return s.UserRepository.GetUser(id)
 }
